@@ -1,3 +1,5 @@
+// import DiscardPile from '../DiscardPile';
+
 class Player {
   constructor(name, id) {
     this.name = name;
@@ -15,6 +17,7 @@ class Player {
     this.hand.flowers = [];
     this.hand.chowPungKong = [];
     this.hand.newTile = "";
+    this.hand.lastDiscardTile = "";
   }
 
   addTileToMain(tiles) {
@@ -25,21 +28,29 @@ class Player {
     }
   }
 
+  getDiscardingTile(tileCode) {
+    return this.hand.main.filter(tile => {
+      return tile.code === tileCode
+    })[0];
+  }
+
+  setLastDiscardTile(tileCode) {
+    this.hand.lastDiscardTile = tileCode;
+  }
+
   discardTile(tileCode) {
-    console.log("before discard", this.hand.main);
-    
     this.hand.main = this.hand.main.filter(tile => {
       return tile.code !== tileCode
     });
-    console.log("after discard", this.hand.main);
 
+    // return discardingTile;
     // Add to discard pile.
 
     // Disable buttons (canDrawTile, canDiscardTile)
 
     // End turn. Add to counter.
-    this.endTurn();
-    console.log(`Player ${this.id} discarded ${tileCode}`);
+    // this.endTurn();
+    // console.log(`Player ${this.id} discarded ${tileCode}`);
   }
 
   endTurn(type="normal") {

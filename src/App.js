@@ -6,6 +6,8 @@ import Player from './player/Player';
 import PlayerHand from './components/Player';
 import _ from 'lodash';
 import { pause, renderLoading } from './utils';
+import DiscardPile from './DiscardPile';
+import DiscardPileArea from './components/DiscardPileArea';
 
 class App extends Component {
   constructor(props) {
@@ -13,6 +15,7 @@ class App extends Component {
 
     this.state = {
       wallTiles: [],
+      discardPile: {},
       player1: {},
       player2: {},
       player3: {},
@@ -22,12 +25,16 @@ class App extends Component {
     };
 
     this.discardTile = this.discardTile.bind(this);
+    this.drawTile = this.drawTile.bind(this);
   }
   
 
   async componentDidMount() {
     const wall = new Wall();
     const wallTiles = wall.tiles;
+
+    const discardPile = new DiscardPile();
+    // const discardedTiles = discardPile.tiles;
 
     const player1 = new Player("James_1", 1);
     const player2 = new Player("James_2", 2);
@@ -56,9 +63,11 @@ class App extends Component {
     player4.addTileToMain(wall.withdrawTile(0, 1, "front"));
     // Expected tile count: 91 out of 144 tiles
     
-    await pause(0.3);
+    await pause(0.2);
 
-    this.setState({ wallTiles,
+    this.setState({
+      wallTiles,
+      discardPile,
       player1,
       player2,
       player3,
@@ -73,32 +82,50 @@ class App extends Component {
   }
 
   discardTile(tileCode, id) {
-    const clonedState = { ...this.state };
-    const player = clonedState["player" + id];
+    const state = { ...this.state };
+    const player = state["player" + id];
+    const { discardPile } = state;
     
+    const discardingTile = player.getDiscardingTile(tileCode);
+    player.setLastDiscardTile(tileCode);
     player.discardTile(tileCode);
-    clonedState.turn = this.incrementTurn();
+    discardPile.addTile(discardingTile);
+    state.turn = this.incrementTurn();
 
-    this.setState(clonedState);
+    this.setState(state);
+  }
+
+  drawTile() {
+    // const { wallTiles } = this.state;
+
+
   }
 
   renderTable() {
-    const { wallTiles, player1, player2, player3, player4, turn } = this.state;
+    const {
+      wallTiles,
+      player1,
+      player2,
+      player3,
+      player4,
+      turn,
+      discardPile
+    } = this.state;
 
     return (
       <Fragment>
         <Table wallTiles={wallTiles} />
-        <PlayerHand player={player1} turn={turn} onDiscardTile={this.discardTile} />
-        <PlayerHand player={player2} turn={turn} onDiscardTile={this.discardTile} />
-        <PlayerHand player={player3} turn={turn} onDiscardTile={this.discardTile} />
-        <PlayerHand player={player4} turn={turn} onDiscardTile={this.discardTile} />
+        <PlayerHand player={player1} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
+        <PlayerHand player={player2} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
+        <PlayerHand player={player3} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
+        <PlayerHand player={player4} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
+        <DiscardPileArea tiles={discardPile} />
       </Fragment>
     );
   }
 
   render() {
-    const { isLoading, turn } = this.state;
-    console.log("turn:", turn);
+    const { isLoading } = this.state;
 
     return (
       <Fragment>
