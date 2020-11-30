@@ -18,6 +18,11 @@ class Wall {
     const tile = this.tiles.splice(index, amount);
     return tile;
   }
+
+  drawSingleTile(side="front") {
+    if (side === "back") return this.tiles.pop();
+    return this.tiles.shift();
+  }
 }
 
 export default Wall;

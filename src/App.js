@@ -14,7 +14,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      wallTiles: [],
+      wall: {},
       discardPile: {},
       player1: {},
       player2: {},
@@ -31,12 +31,11 @@ class App extends Component {
 
   async componentDidMount() {
     const wall = new Wall();
-    const wallTiles = wall.tiles;
 
     const discardPile = new DiscardPile();
     // const discardedTiles = discardPile.tiles;
 
-    const player1 = new Player("James_1", 1);
+    const player1 = new Player("James_1", 1, true);
     const player2 = new Player("James_2", 2);
     const player3 = new Player("James_3", 3);
     const player4 = new Player("James_4", 4);
@@ -66,7 +65,7 @@ class App extends Component {
     await pause(0.2);
 
     this.setState({
-      wallTiles,
+      wall,
       discardPile,
       player1,
       player2,
@@ -81,29 +80,35 @@ class App extends Component {
     return (turn === 4) ? 1 : turn + 1;
   }
 
-  discardTile(tileCode, id) {
-    const state = { ...this.state };
-    const player = state["player" + id];
-    const { discardPile } = state;
+  discardTile(tileCode, playerId) {
+    let { turn, discardPile } = this.state;
+    const player = this.state[`player${playerId}`];
     
     const discardingTile = player.getDiscardingTile(tileCode);
     player.setLastDiscardTile(tileCode);
     player.discardTile(tileCode);
+    player.setHasDrawnTile(false);
     discardPile.addTile(discardingTile);
-    state.turn = this.incrementTurn();
+    turn = this.incrementTurn();
 
-    this.setState(state);
+    this.setState({ [`player${playerId}`]:player, discardPile, turn });
   }
 
-  drawTile() {
-    // const { wallTiles } = this.state;
+  drawTile(playerId) {
+    const { wall } = this.state;
+    const player = this.state[`player${playerId}`];
 
+    const drawnTile = wall.drawSingleTile("front");
+    player.addTileToMain(drawnTile);
+    player.setNewestTile(drawnTile.code);
+    player.setHasDrawnTile(true);
 
+    this.setState({ [`player${playerId}`]: player, wall });
   }
 
   renderTable() {
     const {
-      wallTiles,
+      wall,
       player1,
       player2,
       player3,
@@ -114,11 +119,36 @@ class App extends Component {
 
     return (
       <Fragment>
-        <Table wallTiles={wallTiles} />
-        <PlayerHand player={player1} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
-        <PlayerHand player={player2} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
-        <PlayerHand player={player3} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
-        <PlayerHand player={player4} turn={turn} onDiscardTile={this.discardTile} onDrawTile={this.drawTile} />
+        <Table wallTiles={wall.tiles} />
+
+        <PlayerHand
+          player={player1}
+          turn={turn}
+          onDiscardTile={this.discardTile}
+          onDrawTile={this.drawTile}
+        />
+
+        <PlayerHand
+          player={player2}
+          turn={turn}
+          onDiscardTile={this.discardTile}
+          onDrawTile={this.drawTile}
+        />
+
+        <PlayerHand
+          player={player3}
+          turn={turn}
+          onDiscardTile={this.discardTile}
+          onDrawTile={this.drawTile}
+        />
+
+        <PlayerHand
+          player={player4}
+          turn={turn}
+          onDiscardTile={this.discardTile}
+          onDrawTile={this.drawTile}
+        />
+
         <DiscardPileArea tiles={discardPile} />
       </Fragment>
     );
