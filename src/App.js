@@ -28,12 +28,10 @@ class App extends Component {
     this.drawTile = this.drawTile.bind(this);
   }
   
-
   async componentDidMount() {
     const wall = new Wall();
 
     const discardPile = new DiscardPile();
-    // const discardedTiles = discardPile.tiles;
 
     const player1 = new Player("James_1", 1, true);
     const player2 = new Player("James_2", 2);
@@ -56,13 +54,18 @@ class App extends Component {
     player4.addTileToMain(wall.withdrawTile(0, 4, "front"));
 
     player1.addTileToMain(wall.withdrawTile(0, 1, "front"));
-    player1.addTileToMain(wall.withdrawTile(3, 1, "front")); // P1 jump tile
+    const player1NewestTile = wall.withdrawTile(3, 1, "front");
+    player1.setNewestTile(player1NewestTile[0].code);
+    player1.addTileToMain(player1NewestTile); // P1 jump tile
+    
     player2.addTileToMain(wall.withdrawTile(0, 1, "front"));
     player3.addTileToMain(wall.withdrawTile(0, 1, "front"));
     player4.addTileToMain(wall.withdrawTile(0, 1, "front"));
     // Expected tile count: 91 out of 144 tiles
     
     await pause(0.2);
+
+    // player1.pungController(this.state.turn, "bam1-5");
 
     this.setState({
       wall,
@@ -87,11 +90,20 @@ class App extends Component {
     const discardingTile = player.getDiscardingTile(tileCode);
     player.setLastDiscardTile(tileCode);
     player.discardTile(tileCode);
+    if (player.isFirst === true) player.setIsFirst(false);
     player.setHasDrawnTile(false);
     discardPile.addTile(discardingTile);
     turn = this.incrementTurn();
 
-    this.setState({ [`player${playerId}`]:player, discardPile, turn });
+    this.setState({ [`player${playerId}`]:player, discardPile, turn }, () => this.onNextPlayerTurn());
+  }
+
+  onNextPlayerTurn() {
+    // const { turn, discardPile } = this.state;
+    // const player = this.state[`player${turn}`];
+
+    // player.pungController(turn, discardPile.recentDiscard);
+    // player.pungController(turn, "cha1-5");
   }
 
   drawTile(playerId) {
@@ -104,6 +116,10 @@ class App extends Component {
     player.setHasDrawnTile(true);
 
     this.setState({ [`player${playerId}`]: player, wall });
+  }
+
+  pung(tileCode) {
+    console.log("Pung pressed!", tileCode);
   }
 
   renderTable() {
@@ -126,6 +142,7 @@ class App extends Component {
           turn={turn}
           onDiscardTile={this.discardTile}
           onDrawTile={this.drawTile}
+          onPung={this.pung}
         />
 
         <PlayerHand
@@ -133,6 +150,7 @@ class App extends Component {
           turn={turn}
           onDiscardTile={this.discardTile}
           onDrawTile={this.drawTile}
+          onPung={this.pung}
         />
 
         <PlayerHand
@@ -140,6 +158,7 @@ class App extends Component {
           turn={turn}
           onDiscardTile={this.discardTile}
           onDrawTile={this.drawTile}
+          onPung={this.pung}
         />
 
         <PlayerHand
@@ -147,6 +166,7 @@ class App extends Component {
           turn={turn}
           onDiscardTile={this.discardTile}
           onDrawTile={this.drawTile}
+          onPung={this.pung}
         />
 
         <DiscardPileArea tiles={discardPile} />

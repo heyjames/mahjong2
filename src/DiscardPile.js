@@ -9,6 +9,10 @@ class DiscardPile {
     this.tiles.push(tile);
   }
 
+  recentDiscard() {
+    return this.recentDiscard;
+  }
+
   setRecentDiscard(tileCode) {
     this.recentDiscard = tileCode;
   }

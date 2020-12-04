@@ -29,6 +29,42 @@ class Player {
     }
   }
 
+  getTileCodePrefix(tileCode) {
+    return tileCode.substring(0, 3);
+  }
+
+  getTileCodeNumber(tileCode) {
+    return tileCode.substring(3, 4);
+  }
+
+  getTrimmedTileCode(tileCode) {
+    return this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode);
+  }
+
+  // Takes the tile code and compares it to see if there are any of similar tiles in hand
+  // 
+  pungController(turn, tileCode) {
+    if (this.id !== turn) return;
+    // let canPung = false;
+
+    const arr = [];
+
+    // console.log("this.hand.main:", this.hand.main);
+    // console.log("tileCode:", tileCode);
+
+    // console.log(this.getTileCodePrefix(this.hand.main[0].code));
+    // console.log(this.getTileCodeNumber(this.hand.main[0].code));
+
+    // Check if there are same tiles in hand and pushes it to an array named "arr".
+    const tilesToPung = this.hand.main.filter(tile => {
+      return tile.code.includes(this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode))
+    });
+
+    if (tilesToPung.length >= 2) arr.push(tilesToPung[0], tilesToPung[1]);
+
+    return arr;
+  }
+
   // Scenario 0 - current player's turn and hasn't drawn tile, is first player
   // this.hasDrawnTile = true;
   // this.canDrawTile = false;
@@ -120,6 +156,10 @@ class Player {
 
   setNewestTile(tileCode) {
     this.hand.newestTile = tileCode;
+  }
+
+  setIsFirst(arg=false) {
+    this.isFirst = arg;
   }
 
   discardTile(tileCode) {
