@@ -1,13 +1,14 @@
 import './App.css';
 import React, { Component, Fragment } from 'react';
 import Wall from './wall/Wall';
-import Table from './components/Table';
+import WallTiles from './components/WallTiles';
 import Player from './player/Player';
 import PlayerHand from './components/Player';
 import _ from 'lodash';
 import { pause, renderLoading } from './utils';
 import DiscardPile from './DiscardPile';
 import DiscardPileArea from './components/DiscardPileArea';
+import { wall2, player12, player22, player32, player42 } from './pungState';
 
 class App extends Component {
   constructor(props) {
@@ -26,6 +27,7 @@ class App extends Component {
 
     this.discardTile = this.discardTile.bind(this);
     this.drawTile = this.drawTile.bind(this);
+    this.pung = this.pung.bind(this);
   }
   
   async componentDidMount() {
@@ -62,10 +64,31 @@ class App extends Component {
     player3.addTileToMain(wall.withdrawTile(0, 1, "front"));
     player4.addTileToMain(wall.withdrawTile(0, 1, "front"));
     // Expected tile count: 91 out of 144 tiles
+
+    player1.sortTiles();
+    player2.sortTiles();
+    player3.sortTiles();
+    player4.sortTiles();
     
     await pause(0.2);
 
-    // player1.pungController(this.state.turn, "bam1-5");
+    player1.setCanDrawTile(false);
+    player1.setCanDiscardTile(true);
+
+    // Use pungState
+    wall.tiles = wall2.tiles;
+    player1.hand.main = player12.hand.main;
+    player1.hand.newestTile = player12.hand.newestTile;
+    player2.hand.main = player22.hand.main;
+    player3.hand.main = player32.hand.main;
+    player4.hand.main = player42.hand.main;
+
+    // Get state to use for pungState.js
+    // console.log(wall.tiles);
+    // console.log(player1.hand.main);
+    // console.log(player2.hand.main);
+    // console.log(player3.hand.main);
+    // console.log(player4.hand.main);
 
     this.setState({
       wall,
@@ -84,8 +107,13 @@ class App extends Component {
   }
 
   discardTile(tileCode, playerId) {
-    let { turn, discardPile } = this.state;
+    let { turn, discardPile, player1, player2, player3, player4 } = this.state;
     const player = this.state[`player${playerId}`];
+
+    player1.setCanPung(true);
+    player2.setCanPung(true);
+    player3.setCanPung(true);
+    player4.setCanPung(true);
     
     const discardingTile = player.getDiscardingTile(tileCode);
     player.setLastDiscardTile(tileCode);
@@ -93,33 +121,73 @@ class App extends Component {
     if (player.isFirst === true) player.setIsFirst(false);
     player.setHasDrawnTile(false);
     discardPile.addTile(discardingTile);
+    player.setCanDrawTile(false);
+    player.setCanDiscardTile(false);
+    player.setCanPung(false);
     turn = this.incrementTurn();
 
-    this.setState({ [`player${playerId}`]:player, discardPile, turn }, () => this.onNextPlayerTurn());
+    this.setState({ discardPile, turn }, () => this.onNextPlayerTurn());
   }
 
   onNextPlayerTurn() {
-    // const { turn, discardPile } = this.state;
-    // const player = this.state[`player${turn}`];
-
-    // player.pungController(turn, discardPile.recentDiscard);
-    // player.pungController(turn, "cha1-5");
+    const { turn } = this.state;
+    const player = this.state[`player${turn}`];
+    player.setCanDrawTile(true);
+    player.setCanDiscardTile(false);
+    
+    // console.log(this.state.discardPile.tiles);
+    this.setState({ [`player${turn}`]:player });
   }
 
   drawTile(playerId) {
-    const { wall } = this.state;
+    const { wall, player1, player2, player3, player4 } = this.state;
     const player = this.state[`player${playerId}`];
+    
+    // If player 2 discards a tile that player 1 can pung, but player 3 draws, then disable player 1's Draw Tile button.
+    player1.setCanPung(false);
+    player2.setCanPung(false);
+    player3.setCanPung(false);
+    player4.setCanPung(false);
 
     const drawnTile = wall.drawSingleTile("front");
     player.addTileToMain(drawnTile);
     player.setNewestTile(drawnTile.code);
     player.setHasDrawnTile(true);
+    player.setCanDrawTile(false);
+    player.setCanDiscardTile(true);
+    player.setCanPung(false);
 
     this.setState({ [`player${playerId}`]: player, wall });
   }
 
-  pung(tileCode) {
-    console.log("Pung pressed!", tileCode);
+  pung(id) {
+    const { discardPile, player1, player2, player3, player4 } = this.state;
+    const player = this.state[`player${id}`];
+    
+    // If player 1 discards a tile that player 4 pungs, then disable player 2's Draw Tile button.
+    player1.setCanDrawTile(false);
+    player2.setCanDrawTile(false);
+    player3.setCanDrawTile(false);
+    player4.setCanDrawTile(false);
+
+    // Get 1 of 3 pung tile from the discarded area.
+    const removedTile = discardPile.removeRecentTile();
+    player.addTileToChowPungKong(removedTile);
+    
+    // Remove the remaining 2 associated pung tiles from the main hand.
+    const tilesToDiscardFromMain = player.pungController(removedTile.code);
+    player.discardTile(tilesToDiscardFromMain[0].code);
+    player.discardTile(tilesToDiscardFromMain[1].code);
+    
+    // Place the 2 associated pung tiles into the player's non-main array.
+    player.addTileToChowPungKong(tilesToDiscardFromMain[0]);
+    player.addTileToChowPungKong(tilesToDiscardFromMain[1]);
+
+    // Set player state when done.
+    player.setCanDrawTile(false);
+    player.setCanDiscardTile(true);
+
+    this.setState({ discardPile, turn: id });
   }
 
   renderTable() {
@@ -133,41 +201,25 @@ class App extends Component {
       discardPile
     } = this.state;
 
+    const players = [player1, player2, player3, player4];
+
     return (
       <Fragment>
-        <Table wallTiles={wall.tiles} />
+        <WallTiles tiles={wall.tiles} />
 
-        <PlayerHand
-          player={player1}
-          turn={turn}
-          onDiscardTile={this.discardTile}
-          onDrawTile={this.drawTile}
-          onPung={this.pung}
-        />
-
-        <PlayerHand
-          player={player2}
-          turn={turn}
-          onDiscardTile={this.discardTile}
-          onDrawTile={this.drawTile}
-          onPung={this.pung}
-        />
-
-        <PlayerHand
-          player={player3}
-          turn={turn}
-          onDiscardTile={this.discardTile}
-          onDrawTile={this.drawTile}
-          onPung={this.pung}
-        />
-
-        <PlayerHand
-          player={player4}
-          turn={turn}
-          onDiscardTile={this.discardTile}
-          onDrawTile={this.drawTile}
-          onPung={this.pung}
-        />
+        {players.map((player, index) => {
+          return (
+            <PlayerHand
+              key={index}
+              player={player}
+              recentDiscardTile={discardPile.getRecentDiscardTile()}
+              turn={turn}
+              onDiscardTile={this.discardTile}
+              onDrawTile={this.drawTile}
+              onPung={this.pung}
+            />
+          );
+        })}
 
         <DiscardPileArea tiles={discardPile} />
       </Fragment>

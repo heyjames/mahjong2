@@ -8,7 +8,7 @@ class Player {
 
     this.hasDrawnTile = false;
     this.canDrawTile = false;
-    this.canDiscardTile = true;
+    this.canDiscardTile = false;
     this.canChow = false;
     this.canPung = false;
     this.canKong = false;
@@ -29,6 +29,10 @@ class Player {
     }
   }
 
+  addTileToChowPungKong(tile) {
+    this.hand.chowPungKong.push(tile);
+  }
+
   getTileCodePrefix(tileCode) {
     return tileCode.substring(0, 3);
   }
@@ -41,10 +45,25 @@ class Player {
     return this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode);
   }
 
+  sortArray(a, b) {
+    // const nameA = a.code.substring(0, 5).toUpperCase();
+    // const nameB = b.code.substring(0, 5).toUpperCase();
+    const nameA = a.index;
+    const nameB = b.index;
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+  
+    return 0; // names must be equal
+  }
+
+  sortTiles() {
+    this.hand.main.sort(this.sortArray);
+  }
+
   // Takes the tile code and compares it to see if there are any of similar tiles in hand
   // 
-  pungController(turn, tileCode) {
-    if (this.id !== turn) return;
+  pungController(tileCode) {
+    // if (this.id !== turn) return;
     // let canPung = false;
 
     const arr = [];
@@ -55,6 +74,7 @@ class Player {
     // console.log(this.getTileCodePrefix(this.hand.main[0].code));
     // console.log(this.getTileCodeNumber(this.hand.main[0].code));
 
+    // console.log("aaa", this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode));
     // Check if there are same tiles in hand and pushes it to an array named "arr".
     const tilesToPung = this.hand.main.filter(tile => {
       return tile.code.includes(this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode))
@@ -198,6 +218,15 @@ class Player {
     if (turn === this.id) disable = false;
     // if (this.isFirstPlayer()) disable = true;
     return disable;
+  }
+  setCanDrawTile(arg) {
+    this.canDrawTile = arg;
+  }
+  setCanDiscardTile(arg) {
+    this.canDiscardTile = arg;
+  }
+  setCanPung(arg) {
+    this.canPung = arg;
   }
 }
  

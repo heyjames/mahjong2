@@ -5,7 +5,7 @@ const PlayerControls = ({ player, turn, onDrawTile }) => {
     <Fragment>
       <button
         onClick={() => onDrawTile(player.id)}
-        disabled={!player.drawTileController(turn)}
+        disabled={!player.canDrawTile}
       >
         Draw Tile
       </button>

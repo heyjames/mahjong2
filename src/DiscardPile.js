@@ -5,7 +5,6 @@ class DiscardPile {
   }
 
   addTile(tile) {
-    this.setRecentDiscard(tile.code);
     this.tiles.push(tile);
   }
 
@@ -13,8 +12,12 @@ class DiscardPile {
     return this.recentDiscard;
   }
 
-  setRecentDiscard(tileCode) {
-    this.recentDiscard = tileCode;
+  getRecentDiscardTile() {
+    return this.tiles[this.tiles.length - 1];
+  }
+
+  removeRecentTile() {
+    return this.tiles.pop();
   }
 
   getStyle(tileCode) {

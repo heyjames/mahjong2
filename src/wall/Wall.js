@@ -2,11 +2,23 @@ import tiles from './tiles';
 
 class Wall {
   constructor() {
-    this.tiles = tiles;
+    // this.tiles = tiles;
+    this.tiles = this.shuffle(tiles);
   }
 
   getTiles() {
     return this.tiles;
+  }
+
+  shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * i);
+      const temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    
+    return array;
   }
 
   withdrawTile(index=0, amount=1, side="front") {
