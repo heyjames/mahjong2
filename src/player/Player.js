@@ -45,43 +45,78 @@ class Player {
     return this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode);
   }
 
-  sortArray(a, b) {
-    // const nameA = a.code.substring(0, 5).toUpperCase();
-    // const nameB = b.code.substring(0, 5).toUpperCase();
-    const nameA = a.index;
-    const nameB = b.index;
-    if (nameA < nameB) return -1;
-    if (nameA > nameB) return 1;
-  
-    return 0; // names must be equal
-  }
-
-  sortTiles() {
-    this.hand.main.sort(this.sortArray);
+  sort(arr) {
+    arr.sort(function (a, b) {
+      // const nameA = a.code.substring(0, 5).toUpperCase();
+      // const nameB = b.code.substring(0, 5).toUpperCase();
+      const nameA = a.index;
+      const nameB = b.index;
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+    
+      return 0; // names must be equal
+    });
   }
 
   // Takes the tile code and compares it to see if there are any of similar tiles in hand
-  // 
   pungController(tileCode) {
-    // if (this.id !== turn) return;
-    // let canPung = false;
-
     const arr = [];
-
-    // console.log("this.hand.main:", this.hand.main);
-    // console.log("tileCode:", tileCode);
-
-    // console.log(this.getTileCodePrefix(this.hand.main[0].code));
-    // console.log(this.getTileCodeNumber(this.hand.main[0].code));
-
-    // console.log("aaa", this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode));
-    // Check if there are same tiles in hand and pushes it to an array named "arr".
+    
     const tilesToPung = this.hand.main.filter(tile => {
       return tile.code.includes(this.getTileCodePrefix(tileCode) + this.getTileCodeNumber(tileCode))
     });
 
     if (tilesToPung.length >= 2) arr.push(tilesToPung[0], tilesToPung[1]);
 
+    return arr;
+  }
+
+  // Refactor with Left, Middle, Right functions.
+  chowControllerL(tileCode) {
+    const arr = [];
+
+    // Set a variable to true if it's a left chow.
+    const tileToChow = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) - 1)}`)
+    });
+    const tileToChow2 = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) - 2)}`)
+    });
+    tileToChow && arr.push(tileToChow);
+    tileToChow2 && arr.push(tileToChow2);
+    // console.log(arr);
+    return arr;
+  }
+  // Refactor with Left, Middle, Right functions.
+  chowControllerM(tileCode) {
+    const arr = [];
+
+    // Set a variable to true if it's a left chow.
+    const tileToChow = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) - 1)}`)
+    });
+    const tileToChow2 = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) + 1)}`)
+    });
+    tileToChow && arr.push(tileToChow);
+    tileToChow2 && arr.push(tileToChow2);
+    // console.log(arr);
+    return arr;
+  }
+  // Refactor with Left, Middle, Right functions.
+  chowControllerR(tileCode) {
+    const arr = [];
+
+    // Set a variable to true if it's a left chow.
+    const tileToChow = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) + 1)}`)
+    });
+    const tileToChow2 = this.hand.main.find(tile => {
+      return tile.code.includes(`${this.getTileCodePrefix(tileCode)}${(this.getTileCodeNumber(tileCode) + 2)}`)
+    });
+    tileToChow && arr.push(tileToChow);
+    tileToChow2 && arr.push(tileToChow2);
+    // console.log(arr);
     return arr;
   }
 
@@ -227,6 +262,9 @@ class Player {
   }
   setCanPung(arg) {
     this.canPung = arg;
+  }
+  setCanChow(arg) {
+    this.canChow = arg;
   }
 }
  

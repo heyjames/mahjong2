@@ -28,6 +28,7 @@ class App extends Component {
     this.discardTile = this.discardTile.bind(this);
     this.drawTile = this.drawTile.bind(this);
     this.pung = this.pung.bind(this);
+    this.chow = this.chow.bind(this);
   }
   
   async componentDidMount() {
@@ -65,15 +66,17 @@ class App extends Component {
     player4.addTileToMain(wall.withdrawTile(0, 1, "front"));
     // Expected tile count: 91 out of 144 tiles
 
-    player1.sortTiles();
-    player2.sortTiles();
-    player3.sortTiles();
-    player4.sortTiles();
+    player1.sort(player1.hand.main);
+    player2.sort(player2.hand.main);
+    player3.sort(player3.hand.main);
+    player4.sort(player4.hand.main);
     
     await pause(0.2);
 
     player1.setCanDrawTile(false);
     player1.setCanDiscardTile(true);
+    player1.setCanChow(false);
+    player1.setCanPung(false);
 
     // Use pungState
     wall.tiles = wall2.tiles;
@@ -121,6 +124,7 @@ class App extends Component {
     player.setCanDrawTile(false);
     player.setCanDiscardTile(false);
     player.setCanPung(false);
+    player.setCanChow(false);
     turn = this.incrementTurn();
 
     this.setState({ discardPile, turn }, () => this.onNextPlayerTurn());
@@ -133,6 +137,7 @@ class App extends Component {
     const player = this.state[`player${turn}`];
     player.setCanDrawTile(true);
     player.setCanDiscardTile(false);
+    player.setCanChow(true);
     
     // console.log(this.state.discardPile.tiles);
     this.setState({ [`player${turn}`]:player });
@@ -152,6 +157,7 @@ class App extends Component {
     player.setCanDrawTile(false);
     player.setCanDiscardTile(true);
     player.setCanPung(false);
+    player.setCanChow(false);
 
     this.setState({ [`player${playerId}`]: player, wall });
   }
@@ -193,6 +199,24 @@ class App extends Component {
     this.setState({ discardPile, turn: id });
   }
 
+  chow(id) {
+    const { discardPile } = this.state;
+    const player = this.state[`player${id}`];
+
+    const removedTile = discardPile.removeRecentTile();
+    player.addTileToChowPungKong(removedTile);
+
+    const tilesToDiscardFromMain = player.chowControllerL(removedTile.code);
+    player.addTileToChowPungKong(tilesToDiscardFromMain[0]);
+    player.addTileToChowPungKong(tilesToDiscardFromMain[1]);
+    player.sort(player.hand.chowPungKong);
+    
+    player.setCanDrawTile(false);
+    player.setCanDiscardTile(true);
+
+    this.setState({ discardPile, turn: id });
+  }
+
   renderTable() {
     const {
       wall,
@@ -218,6 +242,7 @@ class App extends Component {
               onDiscardTile={this.discardTile}
               onDrawTile={this.drawTile}
               onPung={this.pung}
+              onChow={this.chow}
             />
           );
         })}

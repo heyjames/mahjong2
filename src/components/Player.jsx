@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import PlayerControls from './PlayerControls';
 import ChowPungKong from './ChowPungKong';
 
-function Player({ player, recentDiscardTile, turn, onDiscardTile, onDrawTile, onPung }) {
+function Player({ player, recentDiscardTile, turn, onDiscardTile, onDrawTile, onPung, onChow }) {
   const highlightNameOnTurn = (player.id === turn) ? "yellow" : "";
   const getNewestTileBgColor = function (tile) {
     if (player.id !== turn) return "";
@@ -16,6 +16,14 @@ function Player({ player, recentDiscardTile, turn, onDiscardTile, onDrawTile, on
     if (recentDiscardTile === undefined) return "none";
     if (tileCode.includes(player.getTrimmedTileCode(recentDiscardTile.code)) === false) return "none";
     if (recentDiscardTile !== undefined && player.pungController(recentDiscardTile.code).length !== 2) return "none";
+    return "inline-block";
+  }
+  const showChow = function (tileCode) {
+    if (player.canChow === false) return "none";
+    if (recentDiscardTile === undefined) return "none";
+    if (recentDiscardTile !== undefined && player.chowControllerL(recentDiscardTile.code).length !== 2) return "none";
+    if ( tileCode.includes(player.chowControllerL(recentDiscardTile.code)[0].code) === false
+        && tileCode.includes(player.chowControllerL(recentDiscardTile.code)[1].code) === false ) return "none";
     return "inline-block";
   }
   
@@ -44,6 +52,13 @@ function Player({ player, recentDiscardTile, turn, onDiscardTile, onDrawTile, on
               onClick={() => onPung(player.id)}
             >
               Pung
+            </button>
+
+            <button
+              style={{ backgroundColor: "orange", color: "white", display: showChow(tile.code) }}
+              onClick={() => onChow(player.id)}
+            >
+              Left Chow
             </button>
           </div>
         )}
