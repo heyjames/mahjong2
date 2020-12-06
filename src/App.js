@@ -110,10 +110,7 @@ class App extends Component {
     let { turn, discardPile, player1, player2, player3, player4 } = this.state;
     const player = this.state[`player${playerId}`];
 
-    player1.setCanPung(true);
-    player2.setCanPung(true);
-    player3.setCanPung(true);
-    player4.setCanPung(true);
+    this.methodCallToAllOtherPlayers(playerId, "setCanPung", true);
     
     const discardingTile = player.getDiscardingTile(tileCode);
     player.setLastDiscardTile(tileCode);
@@ -129,6 +126,8 @@ class App extends Component {
     this.setState({ discardPile, turn }, () => this.onNextPlayerTurn());
   }
 
+  // When a player discards a tile and it goes to the next player's turn,
+  // allow this next player to draw a tile but not discard.
   onNextPlayerTurn() {
     const { turn } = this.state;
     const player = this.state[`player${turn}`];
@@ -143,11 +142,8 @@ class App extends Component {
     const { wall, player1, player2, player3, player4 } = this.state;
     const player = this.state[`player${playerId}`];
     
-    // If player 2 discards a tile that player 1 can pung, but player 3 draws, then disable player 1's Draw Tile button.
-    player1.setCanPung(false);
-    player2.setCanPung(false);
-    player3.setCanPung(false);
-    player4.setCanPung(false);
+    // If player 2 discards a tile that player 1 can pung, but player 3 draws, then disable player 1's pung button.
+    this.methodCallToAllOtherPlayers(playerId, "setCanPung", false);
 
     const drawnTile = wall.drawSingleTile("front");
     player.addTileToMain(drawnTile);
@@ -160,15 +156,22 @@ class App extends Component {
     this.setState({ [`player${playerId}`]: player, wall });
   }
 
+  methodCallToAllOtherPlayers(id, method, param) {
+    const state = {...this.state};
+
+    [1, 2, 3, 4]
+    .filter(el => el !== id)
+    .forEach(p => {
+      state[`player${p}`][method](param);
+    });
+  }
+
   pung(id) {
     const { discardPile, player1, player2, player3, player4 } = this.state;
     const player = this.state[`player${id}`];
     
     // If player 1 discards a tile that player 4 pungs, then disable player 2's Draw Tile button.
-    player1.setCanDrawTile(false);
-    player2.setCanDrawTile(false);
-    player3.setCanDrawTile(false);
-    player4.setCanDrawTile(false);
+    this.methodCallToAllOtherPlayers(id, "setCanDrawTile", false);
 
     // Get 1 of 3 pung tile from the discarded area.
     const removedTile = discardPile.removeRecentTile();
@@ -201,13 +204,11 @@ class App extends Component {
       discardPile
     } = this.state;
 
-    const players = [player1, player2, player3, player4];
-
     return (
       <Fragment>
         <WallTiles tiles={wall.tiles} />
 
-        {players.map((player, index) => {
+        {[player1, player2, player3, player4].map((player, index) => {
           return (
             <PlayerHand
               key={index}
