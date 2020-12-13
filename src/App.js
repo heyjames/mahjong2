@@ -207,6 +207,8 @@ class App extends Component {
     player.addTileToChowPungKong(removedTile);
 
     const tilesToDiscardFromMain = player.chowControllerL(removedTile.code);
+    player.discardTile(tilesToDiscardFromMain[0].code);
+    player.discardTile(tilesToDiscardFromMain[1].code);
     player.addTileToChowPungKong(tilesToDiscardFromMain[0]);
     player.addTileToChowPungKong(tilesToDiscardFromMain[1]);
     player.sort(player.hand.chowPungKong);

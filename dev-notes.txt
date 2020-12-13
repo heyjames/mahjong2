@@ -1,0 +1,26 @@
+just implemented logic to enable disable buttons to discard and draw tiles and includes the logic to accomodate the first player
+next up, you should review code and design for future features like pong
+
+
+2020-12-01 6:30pm
+Make Pung work in Player.js on function pungController(turn, tileCode)
+
+
+2020-12-01 10:24pm
+Just finished getting pung button to only show next to the associated tiles on Player.jsx line 15 return "inline-block".
+
+
+2020-12-03 7:28pm
+You can start working on the pung function in App.js, but I think reworking how the last tile is set in the discard pile would be better. Use the last item in array instead of manually setting it.
+
+
+2020-12-04 6:39pm
+Got the state to reload to the same state on compile. Got pung to work. Now I need to do setters for managing the Player variables like disabling draw tile button after a pung.
+
+
+2020-12-05 3:17am
+Pung works pretty well but there is redundant code to set their state (setCanDrawTile(false) on every player). I made a loop to execute that function on all players except the current player, since the current player will have its own state management.
+
+
+2020-12-06 1:36am
+You got one type of chow (discard tile is the right-most) working. There is a bug you fixed after git push.
